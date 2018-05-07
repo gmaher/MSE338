@@ -6,7 +6,7 @@ Created on Thu Apr 19 15:34:50 2018
 """
 
 from environments import CartPole
-from agents import ConstantAgent, RandomAgent, EpisodicQLearning
+from agents import ConstantAgent, RandomAgent, EpisodicQLearning, SARSA
 from agents import TabularFeatures
 
 import numpy as np
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 np.random.seed(1704)
 
 verbose = False
-render = True
+render = False
 
 horizon = 100
 episode_count = 10000
@@ -23,9 +23,24 @@ episode_count = 10000
 environment = CartPole(verbose=verbose)
 # agent = RandomAgent(num_action=len(environment.action_space),
 #                     feature_extractor=TabularFeatures(5, 5, 11, 11))
+
 agent = EpisodicQLearning(num_action=len(environment.action_space),
                     feature_extractor=TabularFeatures(5, 5, 11, 11),
                     explore='epsilon_greedy', exp_param=0.1, learning_rate=0.1)
+
+# agent = EpisodicQLearning(num_action=len(environment.action_space),
+#                     feature_extractor=TabularFeatures(5, 5, 11, 11),
+#                     explore='boltzmann', exp_param=0.5, learning_rate=0.1)
+
+# agent = SARSA(num_action=len(environment.action_space),
+#                     feature_extractor=TabularFeatures(5, 5, 11, 11),
+#                     explore='epsilon_greedy', exp_param=0.5, learning_rate=0.1)
+
+#
+# agent = SARSA(num_action=len(environment.action_space),
+#                     feature_extractor=TabularFeatures(5, 5, 11, 11),
+#                     explore='boltzmann', exp_param=2.0, learning_rate=0.1)
+
 
 state_action_list_per_episode = [[] for episode in range(episode_count)]
 reward_per_episode = np.zeros(episode_count)
@@ -92,4 +107,6 @@ plt.xlabel("Episode")
 plt.ylabel("Reward")
 plt.ylim([0, None])
 plt.legend(handles=handles, loc="center", bbox_to_anchor=(0.5, -0.25))
+plt.tight_layout()
+plt.savefig('graph.pdf',dpi=300)
 plt.show()

@@ -58,8 +58,9 @@ class Agent(object):
     Returns:
       action - integer index for action selection
     """
-    # TODO(Implement _boltzmann_action)
-    pass
+    b = np.exp(q_vals*beta)
+    p = b/np.sum(b)
+    return np.random.choice(len(q_vals),p=p)
 
 
 class RandomAgent(Agent):
@@ -98,11 +99,11 @@ class EpisodicQLearning(Agent):
         self.num_state         = feature_extractor.dimension
         self.num_action        = num_action
         self.Q                 = np.zeros((self.num_state, self.num_action))+10+\
-            np.random.randn(self.num_state,self.num_action)
+            0.1*np.random.randn(self.num_state,self.num_action)
         self.explore   = kwargs['explore']
         self.exp_param = kwargs['exp_param']
         self.learning_rate = kwargs['learning_rate']
-        
+
     def pick_action(self, obs, **kwargs):
         state  = self.feature_extractor.get_feature(obs)
         qvals  = self.Q[state]
@@ -113,7 +114,7 @@ class EpisodicQLearning(Agent):
         return action
 
     def __str__(self):
-        return "EpisodicQLearningAgent(Q={})".format(self.Q)
+        return "EpisodicQLearningAgent, {}={}".format(self.explore,self.exp_param)
 
     def update_observation(self, obs, action, reward, new_obs, p_continue,
                          **kwargs):
@@ -123,8 +124,18 @@ class EpisodicQLearning(Agent):
             self.learning_rate*(reward + p_continue*np.amax(self.Q[sp]))
 
 # TODO(Implement SARSA)
-# class SARSA(Agent):
+class SARSA(EpisodicQLearning):
+    def __str__(self):
+        return "SARSA Agent, {}={} ".format(self.explore,self.exp_param)
 
+    def update_observation(self, obs, action, reward, new_obs, p_continue,
+                         **kwargs):
+        s  = self.feature_extractor.get_feature(obs)
+        sp = self.feature_extractor.get_feature(new_obs)
+        ap = self.pick_action(new_obs)
+
+        self.Q[s, action] = (1-self.learning_rate)*self.Q[s,action]+\
+            self.learning_rate*(reward + p_continue*self.Q[sp,ap])
 
 ###############################################################################
 class FeatureExtractor(object):
