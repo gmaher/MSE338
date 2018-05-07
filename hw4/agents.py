@@ -43,8 +43,11 @@ class Agent(object):
     Returns:
       action: integer index for action selection
     """
-    # TODO(Implement _egreedy_action)
-    pass
+    r = np.random.rand()
+    if r <= epsilon:
+        return np.random.randint(len(q_vals))
+    else:
+        return np.argmax(q_vals)
 
 
   def _boltzmann_action(self, q_vals, beta):
@@ -89,8 +92,35 @@ class ConstantAgent(Agent):
 
 
 # TODO(Implement EpisodicQLearning)
-# class EpisodicQLearning(Agent):
+class EpisodicQLearning(Agent):
+    def __init__(self, num_action, feature_extractor, **kwargs):
+        self.feature_extractor = feature_extractor
+        self.num_state         = feature_extractor.dimension
+        self.num_action        = num_action
+        self.Q                 = np.zeros((self.num_state, self.num_action))+10+\
+            np.random.randn(self.num_state,self.num_action)
+        self.explore   = kwargs['explore']
+        self.exp_param = kwargs['exp_param']
+        self.learning_rate = kwargs['learning_rate']
+        
+    def pick_action(self, obs, **kwargs):
+        state  = self.feature_extractor.get_feature(obs)
+        qvals  = self.Q[state]
+        if self.explore == 'epsilon_greedy':
+            action = self._egreedy_action(qvals,self.exp_param)
+        else:
+            action = self._boltzmann_action(qvals,self.exp_param)
+        return action
 
+    def __str__(self):
+        return "EpisodicQLearningAgent(Q={})".format(self.Q)
+
+    def update_observation(self, obs, action, reward, new_obs, p_continue,
+                         **kwargs):
+        s  = self.feature_extractor.get_feature(obs)
+        sp = self.feature_extractor.get_feature(new_obs)
+        self.Q[s, action] = (1-self.learning_rate)*self.Q[s,action]+\
+            self.learning_rate*(reward + p_continue*np.amax(self.Q[sp]))
 
 # TODO(Implement SARSA)
 # class SARSA(Agent):

@@ -6,7 +6,7 @@ Created on Thu Apr 19 15:34:50 2018
 """
 
 from environments import CartPole
-from agents import ConstantAgent, RandomAgent
+from agents import ConstantAgent, RandomAgent, EpisodicQLearning
 from agents import TabularFeatures
 
 import numpy as np
@@ -21,9 +21,11 @@ horizon = 100
 episode_count = 10000
 
 environment = CartPole(verbose=verbose)
-agent = RandomAgent(num_action=len(environment.action_space),
-                    feature_extractor=TabularFeatures(5, 5, 11, 11))
-
+# agent = RandomAgent(num_action=len(environment.action_space),
+#                     feature_extractor=TabularFeatures(5, 5, 11, 11))
+agent = EpisodicQLearning(num_action=len(environment.action_space),
+                    feature_extractor=TabularFeatures(5, 5, 11, 11),
+                    explore='epsilon_greedy', exp_param=0.1, learning_rate=0.1)
 
 state_action_list_per_episode = [[] for episode in range(episode_count)]
 reward_per_episode = np.zeros(episode_count)
